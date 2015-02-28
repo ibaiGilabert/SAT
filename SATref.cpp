@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <vector>
-//#include <stack>
-//#include <queue>
 using namespace std;
 
 #define UNDEF -1
@@ -17,12 +15,10 @@ class Literal
 public:
     Literal() {
         value = UNDEF;      // model, actually
-        //assigned = false;
         occurrences = 0;
     }
 
     int value;
-    //bool assigned;
     int occurrences;
     vector<int> inClauses, negatives, positives;   // clausules on apareix el literal i-essim 
 };
@@ -31,17 +27,14 @@ public:
 uint numVars;
 uint numClauses;
 vector<vector<int> > clauses;
-//vector<int> undef_clauses;
 vector<Literal> lits;
 
-vector<int> model;
 vector<int> modelStack;
 uint indexOfNextLitToPropagate;
 uint decisionLevel;
+uint varsAssigned;
 
 vector< pair<int, int> > heuristByAppear;           // [numVars]
-//priority_queue< pair<int,int> > heuristByAppear;
-
 
 struct Comp {
    bool operator() (const pair<int, int> &a, const pair<int, int> &b)
@@ -66,16 +59,13 @@ void readClauses( ){
     
     lits.resize(numVars+1);
     clauses.resize(numClauses);
-    vector<int> numAppear(numVars+1, 0);
-    //undef_clauses = vector<int>(numClauses, 0);
+
     // Read clauses
     for (uint i = 0; i < numClauses; ++i) {
         int lit;
         while (cin >> lit and lit != 0) {
             clauses[i].push_back(lit);
             
-            //++undef_clauses[i];
-            ++numAppear[abs(lit)];
             ++lits[abs(lit)].occurrences;
 
             if (lit > 0) lits[lit].positives.push_back(i);
@@ -97,10 +87,12 @@ void readClauses( ){
         cout << endl;
     }*/
 
-    // Make Heap
+    // Sort variables by occurrences
     heuristByAppear.resize(numVars);
     for (uint i = 1; i < numVars+1; ++i) {
-        heuristByAppear[i-1] = make_pair(numAppear[i], i);
+        heuristByAppear[i-1] = make_pair(lits[i].occurrences, i);    
+        //int diff = lits[i].positives.size() - lits[i].negatives.size();
+        //heuristByAppear[i-1] = make_pair( abs(diff), i);
     }
     sort(heuristByAppear.begin(), heuristByAppear.end(), Comp());
     /*cout << "HEAP BEFORE" << endl;
@@ -108,7 +100,6 @@ void readClauses( ){
         cout << "#" << heuristByAppear[i].first << " <- " << heuristByAppear[i].second << endl;
     }
     cout << "----------" << endl;*/
-    //make_heap(heuristByAppear.begin(), heuristByAppear.end(), Comp());
 }
 
 
@@ -118,73 +109,56 @@ int currentValueInModel(int lit) {
         if (lits[-lit].value == UNDEF) return UNDEF;
         return 1 - lits[-lit].value;
     }
-
-    /*if (lit >= 0) return model[lit];
-    else {
-        if (model[-lit] == UNDEF) return UNDEF;
-        return 1 - model[-lit];
-    }*/
 }
 
 
 void setLiteralToTrue(int lit) {
-    modelStack.push_back(lit);
+    modelStack.push_back(lit);  
+    ++varsAssigned;
     if (lit > 0) lits[lit].value = TRUE;
     else lits[-lit].value = FALSE;
-
-    /*if (lit > 0) model[lit] = TRUE;
-    else model[-lit] = FALSE;		*/
 }
 
 
 bool checkConflicts() {
     while ( indexOfNextLitToPropagate < modelStack.size() ) {
-        
-        cout << "--------------------" << endl;
-        cout << "modelStack:";
-        for (int i = 0; i < modelStack.size(); ++i) cout << " " << modelStack[i] << "(" << i << ")";
-        cout << endl;
-        cout << "indexOfNextLitToPropagate: " << indexOfNextLitToPropagate << endl;
-        
         int var = abs(modelStack[indexOfNextLitToPropagate]);
-        vector<int> clausesToCheck = lits[var].inClauses;
+        vector<int> clausesToCheck; // = lits[var].inClauses;
+        if (lits[var].value == TRUE)        clausesToCheck = lits[var].negatives;
+        else if (lits[var].value == FALSE)  clausesToCheck = lits[var].positives;
+
         
-        //cout << "modelStack[indexOf]: " << modelStack[indexOfNextLitToPropagate] << endl;
-        //cout << "var: " << var << endl;
+        /*cout << "--------------------" << endl;
+        cout << "modelStack:";  for (int i = 0; i < modelStack.size(); ++i) cout << " " << modelStack[i] << "(" << i << ")";
+        cout << endl;
+        int k = 0; 
+        for (int i = 0; i < modelStack.size(); ++i) {
+            if (modelStack[i] != 0) ++k;
+        }
+        cout << "varsAssigned: " << varsAssigned << ", counted(" << k << ")" << endl;   
+        cout << "indexOfNextLitToPropagate: " << indexOfNextLitToPropagate << endl;
+        cout << "modelStack[indexOf]: " << modelStack[indexOfNextLitToPropagate] << endl;
+        cout << "var: " << var << endl;
         //cout << "lits[ abs(modelStack[indexOf]) ].value: " << lits[var].value << endl;
             //cout << "clausesToCheck:"; for(int k = 0; k < clausesToCheck.size(); ++k) cout << " " << clausesToCheck[k];
             //cout << endl;
-                //if (lits[var].value == TRUE)        clausesToCheck = lits[var].negatives;
-                //else if (lits[var].value == FALSE)  clausesToCheck = lits[var].positives;
 
-        cout << "--------------------" << endl;
+        cout << "--------------------" << endl;*/
 
         ++indexOfNextLitToPropagate;
 
-        /*for (int i = 0; i < clausesToCheck.size(); ++i) {
+        for (int i = 0; i < clausesToCheck.size(); ++i) {
+            int clause = clausesToCheck[i];
             bool someLitTrue = false;
             int numUndefs = 0;
             int lastLitUndef = 0;
-            for (uint k = 0; not someLitTrue and k < clauses[ clausesToCheck[i] ].size(); ++k) {
-                int val = currentValueInModel(clauses[ clausesToCheck[i] ][k]);
+            for (uint k = 0; not someLitTrue and k < clauses[ clause ].size(); ++k) {
+                int val = currentValueInModel(clauses[ clause ][k]);
                 if (val == TRUE) someLitTrue = true;
-                else if (val == UNDEF) { ++numUndefs; lastLitUndef = clauses[ clausesToCheck[i] ][k]; }
+                else if (val == UNDEF) { ++numUndefs; lastLitUndef = clauses[ clause ][k]; }
             }
             if (not someLitTrue and numUndefs == 0) return true; // conflict! all lits false
-            else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);        // modelStack.push_back()
-        }*/
-
-        for (uint i = 0; i < numClauses; ++i) {
-            bool someLitTrue = false;
-            int numUndefs = 0;
-            int lastLitUndef = 0;
-            for (uint k = 0; not someLitTrue and k < clauses[i].size(); ++k) {
-                int val = currentValueInModel(clauses[i][k]);
-                if (val == TRUE) someLitTrue = true;
-                else if (val == UNDEF) { ++numUndefs; lastLitUndef = clauses[i][k]; }
-            }
-            if (not someLitTrue and numUndefs == 0) return true; // conflict! all lits false
-            else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);	
+            else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);        // modelStack.push_back()    
         }
     }
     return false;
@@ -197,12 +171,11 @@ void backtrack() {
     while (modelStack[i] != 0) { // 0 is the DL mark
         lit = modelStack[i];
         lits[abs(lit)].value = UNDEF;
-        //model[abs(lit)] = UNDEF;
         modelStack.pop_back();
         --i;
+        --varsAssigned;
     }
     // at this point, lit is the last decision
-    cout << "\t-> DL mark? :" << modelStack[modelStack.size()-1] << " size.(): " << modelStack.size() << endl;
     modelStack.pop_back(); // remove the DL mark
     --decisionLevel;
     indexOfNextLitToPropagate = modelStack.size();
@@ -212,8 +185,14 @@ void backtrack() {
 
 // Heuristic for finding the next decision literal:
 int getNextDecisionLiteral() {
-    for (int i = 1; i <= numVars; ++i) {
-        if (lits[ heuristByAppear[i].second ].value == UNDEF) return heuristByAppear[i].second;
+    for (int i = 0; i < numVars; ++i) {
+        if (lits[ heuristByAppear[i].second ].value == UNDEF) {
+            return heuristByAppear[i].second;
+            //if (lits[ heuristByAppear[i].second ].positives.size() >= lits[ heuristByAppear[i].second ].negatives.size())
+            //    return heuristByAppear[i].second;
+            //else 
+            //    return -heuristByAppear[i].second;
+        }
     }
     return 0;                               // reurns 0 when all literals are defined
 }
@@ -241,19 +220,14 @@ void printModel() {
     cout << "-------------" << endl;
 }
 
-/*void update_undef(int lit) {
-    for (int i = 0; i < lits[abs(lit)].inClauses; ++i) {
-        --undef_clauses[ lits[abs(lit)].inClauses[i] ];
-    }
-}*/
 
 int main(int argc, char** argv) {
     readClauses(); // reads numVars, numClauses and clauses
 
     //model.resize(numVars+1,UNDEF);
-    indexOfNextLitToPropagate = 0;  
+    indexOfNextLitToPropagate = 0;
     decisionLevel = 0;
-
+    varsAssigned = 0;
     // Take care of initial unit clauses, if any
     for (uint i = 0; i < numClauses; ++i)
         if (clauses[i].size() == 1) {
@@ -272,7 +246,7 @@ int main(int argc, char** argv) {
         int decisionLit = getNextDecisionLiteral();
         if (decisionLit == 0) { 
             checkmodel(); 
-            cout << "SATISFIABLE" << endl; 
+            cout << "SATISFIABLE" << endl;
             // Print model
             //printModel();
             return 20; 
