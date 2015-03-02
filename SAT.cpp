@@ -1,6 +1,6 @@
 #include <iostream>
-#include <fstream>
-#include <sstream>
+//#include <fstream>
+//#include <sstream>
 #include <stdlib.h>
 #include <algorithm>
 #include <vector>
@@ -218,14 +218,15 @@ void backtrack() {
 int getNextDecisionLiteral() {
     for (uint i = 0; i < numVars; ++i) {
         if (lits[ heuristByAppear[i].second ].value == UNDEF) {
-            //indexOfNextLitToDecide = i;
-            //cout << "\tDecide i: " << indexOfNextLitToDecide << endl;
-            //cout << "\ti returned -> " << i << " (varsAssigned:" << varsAssigned << ")" << endl;
+                //indexOfNextLitToDecide = i;
+                //cout << "\tDecide i: " << indexOfNextLitToDecide << endl;
+                //cout << "\ti returned -> " << i << " (varsAssigned:" << varsAssigned << ")" << endl;
             return heuristByAppear[i].second;
-            //if (lits[ heuristByAppear[i].second ].positives.size() >= lits[ heuristByAppear[i].second ].negatives.size())
-            //    return heuristByAppear[i].second;
-            //else 
-            //    return -heuristByAppear[i].second;
+            //cout << "[i:" << i << "] heuristByAppear[i].second: " << heuristByAppear[i].second << ", (+) " << lits[ heuristByAppear[i].second+1 ].positives.size() << ", (-) " << lits[ heuristByAppear[i].second+1 ].positives.size() << endl;
+            /*if (lits[ heuristByAppear[i].second+1 ].positives.size() >= lits[ heuristByAppear[i].second+1 ].negatives.size())
+                return heuristByAppear[i].second;
+            else 
+                return -heuristByAppear[i].second;*/
         }
         //else cout << "\t<" << heuristByAppear[i].first << ", " << heuristByAppear[i].second << "> already assigned" << endl;
     }
