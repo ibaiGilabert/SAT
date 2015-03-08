@@ -1,0 +1,49 @@
+
+    /*cout << "--- LITERALS ---" << endl;
+    for (int i = 1; i < numVars+1; ++i) {
+        cout << "\tlit " << i << ", occurrences: " << lits[i].occurrences << endl;
+        cout << "\t\tpos: " << lits[i].positives.size() << ", neg: " << lits[i].negatives.size() << endl;
+        cout << "\t\t(+):";
+        for (int j = 0; j < lits[i].positives.size(); ++j) cout << " " << lits[i].positives[j];
+        cout << endl << "\t\t(-):";
+        for (int j = 0; j < lits[i].negatives.size(); ++j) cout << " " << lits[i].negatives[j];
+        cout << endl << "\t\t(U):";
+        for (int j = 0; j < lits[i].inClauses.size(); ++j) cout << " " << lits[i].inClauses[j];
+        cout << endl;
+    }*/
+
+        /*cout << "--- SORTED ---" << endl;
+    for (int i = 0; i < heuristByAppear.size(); ++i) {
+        cout << "#" << heuristByAppear[i].first << " <- " << heuristByAppear[i].second << endl;
+    }
+    cout << "--------------" << endl;*/
+
+
+
+        /*cout << "--------------------" << endl;
+        cout << "modelStack:";  for (int i = 0; i < modelStack.size(); ++i) cout << " " << modelStack[i] << "(" << i << ")";
+        cout << endl;
+        int k = 0; 
+        for (int i = 0; i < modelStack.size(); ++i) {
+            if (modelStack[i] != 0) ++k;
+        }
+        cout << "varsAssigned: " << varsAssigned << ", counted(" << k << ")" << endl;   
+        cout << "indexOfNextLitToDecide: " << indexOfNextLitToDecide << endl;
+        cout << "indexOfNextLitToPropagate: " << indexOfNextLitToPropagate << endl;
+        cout << "modelStack[indexOf]: " << modelStack[indexOfNextLitToPropagate] << endl;
+        cout << "var: " << var << endl;
+        //cout << "lits[ abs(modelStack[indexOf]) ].value: " << lits[var].value << endl;
+            //cout << "clausesToCheck:"; for(int k = 0; k < clausesToCheck.size(); ++k) cout << " " << clausesToCheck[k];
+            //cout << endl;
+
+        cout << "--------------------" << endl;*/
+
+
+        /*--indexOfNextLitToDecide;
+    i = indexOfNextLitToDecide;
+    cout << "start decision backtracking at var " << heuristByAppear[i].second << " (" << i << ")" << endl;
+    while ( lits[ heuristByAppear[i].second ].value != UNDEF) {
+        --indexOfNextLitToDecide;
+        --i;
+    }*/
+    
